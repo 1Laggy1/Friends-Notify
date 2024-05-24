@@ -23,6 +23,8 @@ public class Program
         _client.Log += Log;
         _client.MessageReceived += HandleMessageReceived;
         _client.Ready += ReadyAsync;
+        //_client.GuildMemberUpdated += GuildMemberUpdatedAsync;
+        _client.PresenceUpdated += GuildMemberUpdatedAsync;
 
         var token = "";
 
@@ -31,6 +33,44 @@ public class Program
 
         // Block this task until the program is closed.
         await Task.Delay(-1);
+    }
+
+    private async Task GuildMemberUpdatedAsync(SocketUser user, SocketPresence oldPresence, SocketPresence newPresence)
+    {
+        Console.WriteLine("Bot is ready.");
+        ulong guildId = 1;
+        IGuild guild = _client.GetGuild(guildId);
+
+        ulong userId = 1;
+        IGuildUser userToSend = await guild.GetUserAsync(userId);
+        Console.WriteLine("Finding user...");
+        if (userToSend != null)
+        {
+            IActivity oldActivity = null;
+            IActivity newActivity = null;
+            if (oldPresence.Status != newPresence.Status)
+            {
+                await userToSend.SendMessageAsync($"{user.Username} is now {newPresence.Status}");
+            }
+            foreach (var activity in oldPresence.Activities)
+            {
+                if (activity.Type == ActivityType.Playing)
+                {
+                    oldActivity = activity;
+                }
+            }
+            foreach (var activity in newPresence.Activities)
+            {
+                if (activity.Type == ActivityType.Playing)
+                {
+                    newActivity = activity;
+                }
+            }
+            if (oldActivity != newActivity && newActivity != null)
+            {
+                await userToSend.SendMessageAsync($"{user.Username} is playing {newActivity.Name}");
+            }
+        }
     }
 
     private async Task ReadyAsync()
