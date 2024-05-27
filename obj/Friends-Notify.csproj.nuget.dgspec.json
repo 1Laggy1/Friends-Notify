@@ -48,6 +48,10 @@
             "Discord.Net": {
               "target": "Package",
               "version": "[3.15.0, )"
+            },
+            "Discord.Net.Commands": {
+              "target": "Package",
+              "version": "[3.15.0, )"
             }
           },
           "imports": [

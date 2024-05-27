@@ -1,13 +1,17 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using System;
-using System.Timers;
+using Discord.Net;
+using Newtonsoft.Json;
+using Friends_Notify;
 
 namespace FriendsNotify;
 
 public class Program
 {
+    private ulong guildId = 1;
+    private string token = "";
     private DiscordSocketClient _client;
+    private Commands commands = new Commands();
 
     public static Task Main(string[] args) => new Program().MainAsync();
 
@@ -25,8 +29,7 @@ public class Program
         _client.Ready += ReadyAsync;
         //_client.GuildMemberUpdated += GuildMemberUpdatedAsync;
         _client.PresenceUpdated += GuildMemberUpdatedAsync;
-
-        var token = "";
+        _client.SlashCommandExecuted += SlashCommandHandler;
 
         await _client.LoginAsync(TokenType.Bot, token);
         await _client.StartAsync();
@@ -35,13 +38,51 @@ public class Program
         await Task.Delay(-1);
     }
 
+    private async Task SlashCommandHandler(SocketSlashCommand command)
+    {
+        await command.DeferAsync();
+        switch (command.Data.Name)
+        {
+            case "track":
+                await commands.trackCommand(command);
+                break;
+
+            case "trackid":
+                await commands.trackIDCommand(command, _client, guildId);
+                break;
+        }
+    }
+
+    private async Task BuildCommands()
+    {
+        var guild = _client.GetGuild(guildId);
+        var guildBuilder = new SlashCommandBuilder()
+            .WithName("track")
+            .WithDescription("Start tracking the user")
+            .AddOption("user", ApplicationCommandOptionType.User, "The user to track");
+        var commandBuilder = new SlashCommandBuilder()
+            .WithName("trackid")
+            .WithDescription("Start tracking the user")
+            .AddOption("userid", ApplicationCommandOptionType.String, "The ID of user to track");
+        try
+        {
+            await _client.Rest.CreateGuildCommand(guildBuilder.Build(), guildId);
+            await _client.Rest.CreateGlobalCommand(commandBuilder.Build());
+        }
+        catch (ApplicationCommandException exception)
+        {
+            var json = JsonConvert.SerializeObject(exception.Errors, Formatting.Indented);
+            Console.WriteLine(json);
+        }
+    }
+
     private async Task GuildMemberUpdatedAsync(SocketUser user, SocketPresence oldPresence, SocketPresence newPresence)
     {
         Console.WriteLine("Bot is ready.");
-        ulong guildId = 1;
+        ulong guildId = 659740413476995073;
         IGuild guild = _client.GetGuild(guildId);
 
-        ulong userId = 1;
+        ulong userId = 401105413703073793;
         IGuildUser userToSend = await guild.GetUserAsync(userId);
         Console.WriteLine("Finding user...");
         if (userToSend != null)
@@ -76,6 +117,7 @@ public class Program
     private async Task ReadyAsync()
     {
         Console.WriteLine("Bot is ready.");
+        await BuildCommands();
     }
 
     private Task Log(LogMessage msg)
