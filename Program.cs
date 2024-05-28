@@ -2,9 +2,9 @@
 using Discord.WebSocket;
 using Discord.Net;
 using Newtonsoft.Json;
-using Friends_Notify;
+using System.Diagnostics;
 
-namespace FriendsNotify;
+namespace Friends_Notify;
 
 public class Program
 {
@@ -13,6 +13,7 @@ public class Program
     private DiscordSocketClient _client;
     private Commands commands = new Commands();
     private BotConfig botConfig;
+    private List<ulong> TestList = new List<ulong> { 401105413703073793, 1073962973338538134 };
 
     public static Task Main(string[] args) => new Program().MainAsync();
 
@@ -93,38 +94,41 @@ public class Program
 
     private async Task GuildMemberUpdatedAsync(SocketUser user, SocketPresence oldPresence, SocketPresence newPresence)
     {
-        Console.WriteLine("Bot is ready.");
-        ulong guildId = 659740413476995073;
+        Console.WriteLine("Notifying...");
+        ulong userTracked = user.Id;
         IGuild guild = _client.GetGuild(guildId);
-
-        ulong userId = 401105413703073793;
-        IGuildUser userToSend = await guild.GetUserAsync(userId);
-        Console.WriteLine("Finding user...");
-        if (userToSend != null)
+        //List<ulong> = SQLite.GetUsersThatTracking(userTracked)
+        foreach (ulong id in TestList)
         {
-            IActivity oldActivity = null;
-            IActivity newActivity = null;
-            if (oldPresence.Status != newPresence.Status)
+            IGuildUser userToSend = await guild.GetUserAsync(id);
+            if (userToSend != null)
             {
-                await userToSend.SendMessageAsync($"{user.Username} is now {newPresence.Status}");
-            }
-            foreach (var activity in oldPresence.Activities)
-            {
-                if (activity.Type == ActivityType.Playing)
+                IActivity oldActivity = null;
+                IActivity newActivity = null;
+                if (oldPresence.Status != newPresence.Status)
                 {
-                    oldActivity = activity;
+                    await userToSend.SendMessageAsync($"{user.Username} is now {newPresence.Status}");
+                    Console.WriteLine($"{user.Username} is now {newPresence.Status}");
                 }
-            }
-            foreach (var activity in newPresence.Activities)
-            {
-                if (activity.Type == ActivityType.Playing)
+                foreach (var activity in oldPresence.Activities)
                 {
-                    newActivity = activity;
+                    if (activity.Type == ActivityType.Playing)
+                    {
+                        oldActivity = activity;
+                    }
                 }
-            }
-            if (oldActivity != newActivity && newActivity != null)
-            {
-                await userToSend.SendMessageAsync($"{user.Username} is playing {newActivity.Name}");
+                foreach (var activity in newPresence.Activities)
+                {
+                    if (activity.Type == ActivityType.Playing)
+                    {
+                        newActivity = activity;
+                    }
+                }
+                if (oldActivity != newActivity && newActivity != null)
+                {
+                    await userToSend.SendMessageAsync($"{user.Username} is playing {newActivity.Name}");
+                    Console.WriteLine($"{user.Username} is now {newPresence.Status}");
+                }
             }
         }
     }
