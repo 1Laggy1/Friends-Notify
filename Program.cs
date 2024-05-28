@@ -12,6 +12,7 @@ public class Program
     private string token = "";
     private DiscordSocketClient _client;
     private Commands commands = new Commands();
+    private BotConfig botConfig;
 
     public static Task Main(string[] args) => new Program().MainAsync();
 
@@ -23,7 +24,9 @@ public class Program
             AlwaysDownloadUsers = true
         };
         _client = new DiscordSocketClient(config);
-
+        botConfig = LoadConfig("config.json");
+        token = botConfig.Token;
+        guildId = botConfig.GuildID;
         _client.Log += Log;
         _client.MessageReceived += HandleMessageReceived;
         _client.Ready += ReadyAsync;
@@ -36,6 +39,18 @@ public class Program
 
         // Block this task until the program is closed.
         await Task.Delay(-1);
+    }
+
+    private BotConfig LoadConfig(string path)
+    {
+        path = AppContext.BaseDirectory + @"config\" + path;
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException($"Could not find {path}.");
+        }
+
+        var json = File.ReadAllText(path);
+        return JsonConvert.DeserializeObject<BotConfig>(json);
     }
 
     private async Task SlashCommandHandler(SocketSlashCommand command)
