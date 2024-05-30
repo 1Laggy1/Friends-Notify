@@ -3,6 +3,12 @@ using Discord.WebSocket;
 using Discord.Net;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Friends_Notify.Data;
+using Microsoft.EntityFrameworkCore;
+using Friends_Notify.Repositories;
+using Friends_Notify.Services;
 
 namespace Friends_Notify;
 
@@ -19,6 +25,22 @@ public class Program
 
     public async Task MainAsync()
     {
+        var services = new ServiceCollection();
+
+        var appConfig = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+        services.AddDbContext<FriendsNotifyDbContext>(options =>
+            options.UseSqlite(appConfig.GetConnectionString("MainConnectionString")
+                ?? throw new InvalidOperationException("Connection string 'MainConnectionString' not found.")));
+
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<FriendsNotifyDbContext>();
+        services.AddScoped<UserService>();
+
+
         DiscordSocketConfig config = new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent | GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildPresences,
