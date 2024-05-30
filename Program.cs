@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using Discord.Net;
 using Newtonsoft.Json;
-using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Friends_Notify.Data;

@@ -9,5 +9,6 @@ namespace Friends_Notify.Repositories
         public Task<User> GetUser(ulong userId);
         public Task<User> AddUser(User user);
         public Task<TrackUsers> StartTrackingUser(ulong userId, ulong userToTrackId);
+        public Task<List<User>> GetUsersThatTracking(ulong userToTrackId);
     }
 }

@@ -41,6 +41,15 @@ namespace Friends_Notify.Repositories
             return trackUsers.Entity;
         }
 
+        public Task<List<User>> GetUsersThatTracking(ulong userToTrackId)
+        {
+            return _context.TrackUsers
+                .Include(userToTrack => userToTrack.User)
+                .Where(trackUser => trackUser.TrackingUserId == userToTrackId)
+                .Select(trackUser => trackUser.User)
+                .ToListAsync();
+        }
+
         public async Task<User> GetUser(ulong userId)
         {
             return await _context.Users.FindAsync(userId);
