@@ -8,6 +8,8 @@ using Friends_Notify.Data;
 using Microsoft.EntityFrameworkCore;
 using Friends_Notify.Repositories;
 using Friends_Notify.Services;
+using System;
+using Friends_Notify.Models;
 
 namespace Friends_Notify;
 
@@ -16,15 +18,19 @@ public class Program
     private ulong guildId = 1;
     private string token = "";
     private DiscordSocketClient _client;
-    private Commands commands = new Commands();
+    private UserService _userService;
+    ServiceCollection services;
+
+    //private Commands commands = new Commands();
     private BotConfig botConfig;
+
     private List<ulong> TestList = new List<ulong> { 401105413703073793, 1073962973338538134 };
 
     public static Task Main(string[] args) => new Program().MainAsync();
 
     public async Task MainAsync()
     {
-        var services = new ServiceCollection();
+        services = new ServiceCollection();
 
         var appConfig = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -38,7 +44,7 @@ public class Program
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<FriendsNotifyDbContext>();
         services.AddScoped<UserService>();
-
+        services.AddScoped<Commands>();
 
         DiscordSocketConfig config = new DiscordSocketConfig
         {
@@ -55,7 +61,6 @@ public class Program
         //_client.GuildMemberUpdated += GuildMemberUpdatedAsync;
         _client.PresenceUpdated += GuildMemberUpdatedAsync;
         _client.SlashCommandExecuted += SlashCommandHandler;
-
         await _client.LoginAsync(TokenType.Bot, token);
         await _client.StartAsync();
 
@@ -78,6 +83,8 @@ public class Program
     private async Task SlashCommandHandler(SocketSlashCommand command)
     {
         await command.DeferAsync();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        Commands commands = serviceProvider.GetService<Commands>();
         switch (command.Data.Name)
         {
             case "track":
@@ -113,23 +120,23 @@ public class Program
         }
     }
 
-    private async Task GuildMemberUpdatedAsync(SocketUser user, SocketPresence oldPresence, SocketPresence newPresence)
+    private async Task GuildMemberUpdatedAsync(SocketUser SocketUser, SocketPresence oldPresence, SocketPresence newPresence)
     {
         Console.WriteLine("Notifying...");
-        ulong userTracked = user.Id;
+        ulong userTracked = SocketUser.Id;
         IGuild guild = _client.GetGuild(guildId);
-        //List<ulong> = SQLite.GetUsersThatTracking(userTracked)
-        foreach (ulong id in TestList)
+        foreach (User user in await _userService.GetUsersThatTracking(userTracked))
         {
-            IGuildUser userToSend = await guild.GetUserAsync(id);
+            ulong userID = user.Id;
+            IGuildUser userToSend = await guild.GetUserAsync(userID);
             if (userToSend != null)
             {
                 IActivity oldActivity = null;
                 IActivity newActivity = null;
                 if (oldPresence.Status != newPresence.Status)
                 {
-                    await userToSend.SendMessageAsync($"{user.Username} is now {newPresence.Status}");
-                    Console.WriteLine($"{user.Username} is now {newPresence.Status}");
+                    await userToSend.SendMessageAsync($"{SocketUser.Username} is now {newPresence.Status}");
+                    Console.WriteLine($"{SocketUser.Username} is now {newPresence.Status}");
                 }
                 foreach (var activity in oldPresence.Activities)
                 {
@@ -147,8 +154,8 @@ public class Program
                 }
                 if (oldActivity != newActivity && newActivity != null)
                 {
-                    await userToSend.SendMessageAsync($"{user.Username} is playing {newActivity.Name}");
-                    Console.WriteLine($"{user.Username} is now {newPresence.Status}");
+                    await userToSend.SendMessageAsync($"{SocketUser.Username} is playing {newActivity.Name}");
+                    Console.WriteLine($"{SocketUser.Username} is now {newPresence.Status}");
                 }
             }
         }
@@ -157,6 +164,8 @@ public class Program
     private async Task ReadyAsync()
     {
         Console.WriteLine("Bot is ready.");
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        _userService = serviceProvider.GetService<UserService>();
         await BuildCommands();
     }
 
