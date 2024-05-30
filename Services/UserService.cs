@@ -29,7 +29,7 @@ namespace Friends_Notify.Services
 
         public Task<List<User>> GetUsersThatTracking(ulong userToTrackId)
         {
-            return _userRepository.GetUsersThatTracking(userToTrackId);
+            return null;
         }
     }
 }
