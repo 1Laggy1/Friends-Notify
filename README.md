@@ -32,6 +32,7 @@ https://docs.google.com/document/d/11_I7SPLk-EAl2-LfKkhtXn05KcbaNzKs/edit?usp=sh
 7. Copy ID of your discord guild that you created. Right-click on the server and copy ID.
 
 8. Provide in config/config.json your guild ID.
-9. Start a bot via .exe file.
-10. Use /track /trackid commands to start tracking.
+9. Provide path where you want your database to be in appsettings.json, for example "E:\\Friends-Notify.db"
+10. Start a bot via .exe file.
+11. Use /track /trackid commands to start tracking.
 
