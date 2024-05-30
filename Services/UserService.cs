@@ -21,6 +21,10 @@ namespace Friends_Notify.Services
         {
             return _userRepository.StartTrackingUser(userId, userToTrackId);
         }
-        
+
+        public Task<User> GetUser(ulong userId)
+        {
+            return _userRepository.GetUser(userId);
+        }
     }
 }
