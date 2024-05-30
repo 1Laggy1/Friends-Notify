@@ -8,5 +8,6 @@ namespace Friends_Notify.Repositories
         public Task<List<User>> GetUsers(Expression<Func<User, bool>> predicate);
         public Task<User> AddUser(User user);
         public Task<TrackUsers> StartTrackingUser(ulong userId, ulong userToTrackId);
+        public Task<List<User>> GetUsersThatTracking(ulong userToTrackId);
     }
 }
