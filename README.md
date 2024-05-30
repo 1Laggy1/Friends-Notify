@@ -36,3 +36,4 @@ https://docs.google.com/document/d/11_I7SPLk-EAl2-LfKkhtXn05KcbaNzKs/edit?usp=sh
 10. Start a bot via .exe file.
 11. Use /track /trackid commands to start tracking.
 
+Just test)
