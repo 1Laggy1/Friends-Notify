@@ -9,5 +9,11 @@ namespace Friends_Notify.Data
         public DbSet<TrackUsers> TrackUsers { get; set; }
 
         public FriendsNotifyDbContext(DbContextOptions<FriendsNotifyDbContext> options) : base(options) {}
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<TrackUsers>()
+                .HasKey(t => new { t.UserId, t.TrackingUserId });
+        }
     }
 }

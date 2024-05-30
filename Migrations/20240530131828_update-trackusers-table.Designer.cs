@@ -2,6 +2,7 @@
 using Friends_Notify.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Friends_Notify.Migrations
 {
     [DbContext(typeof(FriendsNotifyDbContext))]
-    partial class FriendsNotifyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240530131828_update-trackusers-table")]
+    partial class updatetrackuserstable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.6");
